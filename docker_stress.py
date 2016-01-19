@@ -20,7 +20,8 @@ class ContinueCreateDockers(object):
         self.net = "f45a2496-808d-4224-ac97-31b28bd651f9"
         self.pre_cmd = "nova --os-auth-url %s --os-tenant-name %s " \
                        "--os-username %s --os-password %s " % \
-                       (self.auth_url, self.tenant, self.username, self.password)
+                       (self.auth_url, self.tenant,
+                        self.username, self.password)
         self.client_map = {'wh-netclient1': self.dockers[0:3],
                            'wh-netclient2': self.dockers[3:6],
                            'wh-netclient3': self.dockers[6:9],
@@ -28,7 +29,7 @@ class ContinueCreateDockers(object):
                            'wh-netclient5': self.dockers[12:15],
                            'wh-netclient6': self.dockers[15:18],
                            'wh-netclient7': self.dockers[18:21],
-                           'wh-netclient8': self.dockers[21:24],}
+                           'wh-netclient8': self.dockers[21:24]}
 
     def set_logging(self):
         logging.basicConfig(level=logging.DEBUG,
@@ -54,7 +55,7 @@ class ContinueCreateDockers(object):
         while True:
             post_cmd = "list |grep %s" % name
             cmd = self.pre_cmd + post_cmd
-            status_str = subprocess.check_output(cmd, shell=True) 
+            status_str = subprocess.check_output(cmd, shell=True)
             state = status_str.split('|')[3].strip()
             if state == "ACTIVE":
                 logging.debug("Create docker success: %s" % name)
@@ -65,16 +66,16 @@ class ContinueCreateDockers(object):
             time.sleep(5)
             timed_out = int(time.time()) - start_time >= 300
             if timed_out:
-                logging.error("Create docker %s timeout in 60s, now status is %s" % \
-                              (name, state))
-                raise Exception("Create docker %s time, now state is %s" % (name, state)) 
-            
+                logging.error("Create docker %s timeout in 60s,\ "
+                              "now status is %s" % (name, state))
+                raise Exception("Create docker %s time, \ "
+                                "now state is %s" % (name, state))
 
     def create_docker(self):
         n = int(self.dockers[-1][-2:]) + 1
         name = "wh-docker-test%04d" % n
-        post_cmd = "boot --availability-zone wh-docker-stress-test --image %s " \
-                   "--flavor %s --nic net-id=%s %s" % \
+        post_cmd = "boot --availability-zone wh-docker-stress-test --image " \
+                   "%s --flavor %s --nic net-id=%s %s" % \
                    (self.image, self.flavor, self.net, name)
         cmd = self.pre_cmd + post_cmd
         logging.debug("create one docker instance: %s" % name)
@@ -94,7 +95,7 @@ class ContinueCreateDockers(object):
     def net_stress(self, client, server):
         logging.debug("Call salt to run net stress command")
         cmd = "salt \"%s\" cmd.run \"ping -c 3 %s\"" % (client, server)
-        print subprocess.check_output(cmd  % client)
+        print subprocess.check_output(cmd % client)
 
     def update_client_map(self, added_server, removed_server):
         for client, server in self.client_map.items():
@@ -110,7 +111,7 @@ class ContinueCreateDockers(object):
             added_docker_ip = self.get_docker_ip(added_docker)
             client = self.update_client_map(added_docker, removed_docker)
             self.net_stress(client, added_docker_ip)
-            #time.sleep(5)
+            time.sleep(5)
 
 if __name__ == "__main__":
     A = ContinueCreateDockers()
